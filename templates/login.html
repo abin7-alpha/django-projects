@@ -1,0 +1,27 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
+    <title>Getx-login</title>
+</head>
+<body>
+    <form action="logins" method="GET">
+        <div class="login-form">
+            <h1>Groove</h1>
+            <div id="form-group">
+                <input type="email" placeholder="enter your id" class="id-stuff" id="email">
+                <input type="password" placeholder="password" class="id-stuff" id="password">
+                <button type="submit" class="id-stuff" id="login-button">login</button>
+            </div>
+            <div id="to-reg-form">
+                <p>New customer?</p>
+                <a href="{% url 'register'%}">start here</a>
+            </div>    
+        </div>
+    </form>
+</body>
+</html>
