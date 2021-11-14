@@ -9,53 +9,32 @@
     <title>Getx-login</title>
 </head>
 <body>
-    <form action="register" method="POST">
+    <form method=POST action="">
+      {% csrf_token %}
         <div class="register-form">
             <h1>getx</h1>
             <div id="register">
                 <div class="form-group">
                     <label id="name-label" for="name">Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      id="name"
-                      class="form-control"
-                      placeholder="Enter your name"
-                    />
+                    {{form.username}}
                   </div>
                   <div class="form-group">
                     <label id="email-label" for="email">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      id="email"
-                      class="form-control"
-                      placeholder="Enter your Email"
-                    />
+                    {{form.email}}
                   </div>
                   <div class="form-group">
                     <label id="password-label" for="password">Password</label>
-                    <input
-                      type="password"
-                      name="password"
-                      id="password"
-                      class="form-control"
-                      placeholder="password"
-                    />
+                    {{form.password1}}
                   </div>
                   <div class="form-group">
                     <label id="conf-password-label" for="conf-password">confirm-Password</label>
-                    <input
-                      type="password"
-                      name="conf-password"
-                      id="conf-password"
-                      class="form-control"
-                      placeholder="confirm-password"
-                    />
+                    {{form.password2}}
                   </div>
-                  <button type="submit" id="register-button">Register</button>
+                  <button type="submit" id="register-button" name="Create User">Register</button>
             </div>
         </div>
-    </form>
+        {{form.errors}}
+        <p>Already have an account?<a href="login/">login</a></p>
+    </form>  
 </body>
 </html>

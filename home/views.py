@@ -1,5 +1,7 @@
 """import "render" to render templates,all other for database connectivity"""
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from authorization.views import login
 
 from home.models import Men_Product, Men_category, Men_product_category
 from home.models import Women_Product, Women_category, Women_product_category
@@ -46,8 +48,10 @@ def final_sorted_categories(category, product_category):
 
     return sub_categories
 
-
 def home(request):
+    # if not request.user.is_authenticated:
+    #     request.user = None
+    #     return redirect('home2')
     men_final_category = final_sorted_categories(Men_category, Men_product_category)
     women_final_category = final_sorted_categories(Women_category, Women_product_category)
     kid_final_category = final_sorted_categories(Kid_category, Kid_product_category)
@@ -57,8 +61,16 @@ def home(request):
                 'women_category' : women_final_category,
                 'kid_category': kid_final_category})
 
-def login(request):
-    return render(request, 'login.html')
+def home2(request):
+    men_final_category = final_sorted_categories(Men_category, Men_product_category)
+    women_final_category = final_sorted_categories(Women_category, Women_product_category)
+    kid_final_category = final_sorted_categories(Kid_category, Kid_product_category)
+
+    return render(request, 'home.html', 
+                {'men_category' : men_final_category, 
+                'women_category' : women_final_category,
+                'kid_category': kid_final_category})
+
 
 def show_products(pk, gender_product):
     products = gender_product.objects.all()
@@ -89,16 +101,37 @@ def details(gender_product, product_name):
 
     return goods
 
+def category():
+    men_final_category = final_sorted_categories(Men_category, Men_product_category)
+    women_final_category = final_sorted_categories(Women_category, Women_product_category)
+    kid_final_category = final_sorted_categories(Kid_category, Kid_product_category)
+    context = {
+            'men_category' : men_final_category, 
+            'women_category' : women_final_category,
+            'kid_category': kid_final_category
+            }
+    
+    return context
+
 def show_products_men(request, pk):
-    context = show_products(pk, Men_Product)
+    goods = show_products(pk, Men_Product)
+    context = category()
+    context['products'] = goods['products']
+
     return render(request, 'products.html', context)
 
 def show_products_women(request, pk):
-    context = show_products(pk, Women_Product)
+    goods = show_products(pk, Women_Product)
+    context = category()
+    context['products'] = goods['products']
+
     return render(request, 'products.html', context)
 
 def show_products_kids(request, pk):
-    context = show_products(pk, Kid_Product)
+    goods = show_products(pk, Kid_Product)
+    context = category()
+    context['products'] = goods['products']
+
     return render(request, 'products.html', context)
 
 def product_details(request, product_name):
@@ -107,7 +140,30 @@ def product_details(request, product_name):
     for products in products_gender:
         if details(products, product_name):
             goods = details(products, product_name)
-    goods = details(Men_Product, product_name)
-    context = {'product' : goods}
-    return render(request, 'product_details.html', context)
+    context = category()
+    context['product'] = goods
     
+    return render(request, 'product_details.html', context)
+
+def search(request):
+    if request.method == "GET":
+        searched = request.GET['search']
+        search_capitalize = searched.capitalize()
+        men_product = Men_Product.objects.filter(name__contains=search_capitalize)
+        women_product = Women_Product.objects.filter(name__contains=searched)
+        kid_product = Kid_Product.objects.filter(name__contains=searched)
+        products = [men_product, women_product, kid_product]
+
+        product_wanted = []
+        for product in products:
+            if product:
+                product_wanted += product
+
+
+        context = category()
+        context['products'] = product_wanted
+
+        return render(request, 'search.html', context)
+    # else:
+    #     return render(request, 'search.html')
+

@@ -10,7 +10,7 @@
     <title>my site</title>
 </head>
 <body>
-  <div id="container">
+  <div id="box">
     <div id="header">
       <div class="logo">
         <img src="{% static 'img/logo.png' %}">
@@ -81,18 +81,19 @@
         </ul>
       </div>
       <div id="search">
-        <form class="search_form" action="form.html">
+        <form class="search_form" method=GET action="{% url 'search_category' %}">
           <input type="text" placeholder="search by products.." name="search">
           <button type="submit"><i class="fa fa-search"></i></button>
         </form>
       </div>
       <nav id="navbar" class="nav">
+        {% if request.user.is_authenticated %}
         <div id="top-nav-right">
           <div class="dropdown">
-            <button class="dropbtn" id="profile-button"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Profile 
+            <button class="dropbtn" id="profile-button"><i class="fa fa-user-circle-o" aria-hidden="true"></i> {{request.user}}
             </button>
             <div class="dropdown-content-profile">
-                <a id="profile-anchor" href="/products_women/{{id}}">LOGIN/SIGNUP</a>
+                <a id="profile-anchor" href="logout">LOGOUT</a>
                 <hr>
                 <a class="options" href="hi.html">Orders</a>
                 <a class="options" href="hi.html">Wishlist</a>
@@ -101,27 +102,33 @@
           </div>
           <a id="cart" href="#contact"><i class="fa fa-shopping-cart" aria-hidden="true"></i></a>
         </div>
+        {% else %}
+        <div id="top-nav-right">
+          <div class="dropdown">
+            <button class="dropbtn" id="profile-button"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Profile
+            </button>
+            <div class="dropdown-content-profile">
+                <a id="profile-anchor" href="register">LOGIN/SIGNUP</a>
+                <hr>
+                <a class="options" href="hi.html">Orders</a>
+                <a class="options" href="hi.html">Wishlist</a>
+                <a class="options" href="hi.html">Contact us</a>
+            </div>
+          </div>
+          <a id="cart" href="#contact"><i class="fa fa-shopping-cart" aria-hidden="true"></i></a>
+        </div>
+        {% endif %}
       </nav>  
     </div>
   </div>
-  <div id="welcome">
-    <img src="https://images.freekaamaal.com/store_desc_images/1516103172.jpg"
-    class="img-responsive">
-    </div>
-    <div id="projects">
-    
-      {% for product in product_names %}
-      <div class="project">
-        <div class="project-tile">
-          <a href="https://playvalorant.com/en-gb/"><img src={{product.img}} for="project3" name="valorant">
-          </a>
-          <p>{{product.name}}</p>
-        </div>
-      </div>
-      {% endfor %}
+  
+    <div id="main-container">
+        {% block content %}
 
+        {% endblock content %}
     </div>
-    <footer id="contact">
+
+    <!-- <footer id="contact">
         <ul>
           <li>contactno: 7356163784</li>
           <li>email    : paulebin9@gmail.com</li>
@@ -129,7 +136,7 @@
       <div id="profile">
         <a href="https://github.com/abin7-alpha/Python-projects" id="profile-link" target="_blank">profile</a>
       </div>  
-    </footer>      
+    </footer> -->
     <script src="{% static 'javascript/script.js' %}"></script>
 </body>
 </html>

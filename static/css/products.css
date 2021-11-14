@@ -19,7 +19,7 @@ body {
     background: #dcdcdc;
 }
 
-h1 {
+#no-products h1 {
     position: relative;
     top: 250px;
 }
@@ -53,7 +53,7 @@ h1 {
     left: 95px;
   }
 
-.container {
+.containers {
     position: relative;
     top: 100px;
     width: 1200px;
@@ -62,13 +62,13 @@ h1 {
     grid-gap: 20px;
 }
 
-.container a {
+.containers a {
     text-decoration: none;
     color:black;
     transition: transform 0.3s;
 }
 
-.container a:hover {
+.containers a:hover {
     transform: scale(1.1);
     top: 0;
     left: 0;
@@ -79,7 +79,7 @@ h1 {
     z-index: 5;
 }
 
-.container .card {
+.containers .card {
     width: 100%;
     background: #fff;
     position: relative;
@@ -90,7 +90,7 @@ h1 {
     height: 250px;
 }
 
-.container .card .content .price-rating {
+.containers .card .content .price-rating {
     display: flex;
     justify-content: space-between;
     align-items: center;
