@@ -1,169 +1,120 @@
 """import "render" to render templates,all other for database connectivity"""
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from authorization.views import login
+from django.http import JsonResponse
+from productorder.models import Order,Customer
 
-from home.models import Men_Product, Men_category, Men_product_category
-from home.models import Women_Product, Women_category, Women_product_category
-from home.models import Kid_Product, Kid_category, Kid_product_category
+from main.models import *
 
 # Create your views here.
 
-def get_categories(gender_wise):
-    """To create a dictionary of id(main category) as a key and name as a value, the initial stage 
-    be like this [{'id' : 1, 'name' : 'topwear'}] after conversion {1 : 'topwear, 2 : 'bottomwear'}"""
-    categories = gender_wise.objects.values('id', 'name')
-
-    category_dict = {}
-    for category in categories:
-        category_dict[category['id']] = category['name']
-
-    return category_dict
-
-def get_sub_categories(gender_wise_product):
-    """To create a dictionary that have key as id(category) 
-    that matches to the id of subcategories(Top wear(id:1)- shirts(id:1),tshirts(id:1),etc..)
-    and value with a list of subcategories that id matches i.e {1 : [formal_shirts,t-shirts,casual shirts]} so on"""
-    sub_categories = gender_wise_product.objects.values('name', 'category_id')
-    id_name_kind = gender_wise_product.objects.values_list('id', 'name')
-
-    sorteds = {}
-    count = 0
-    for category in sub_categories:
-        if category['category_id'] not in sorteds:
-            sorteds[category['category_id']] = [id_name_kind[count]]
-        else:
-            sorteds[category['category_id']] += [id_name_kind[count]]
-        count += 1
-
-    return sorteds
-
-def final_sorted_categories(category, product_category):
-    categories = get_categories(category)
-    sub_categories = get_sub_categories(product_category)
-
-    for i,j in categories.items():
-        if i in sub_categories.keys():
-            sub_categories[j] = sub_categories.pop(i)
-
-    return sub_categories
-
 def home(request):
-    # if not request.user.is_authenticated:
-    #     request.user = None
-    #     return redirect('home2')
-    men_final_category = final_sorted_categories(Men_category, Men_product_category)
-    women_final_category = final_sorted_categories(Women_category, Women_product_category)
-    kid_final_category = final_sorted_categories(Kid_category, Kid_product_category)
+    men_category, women_category, kids_catogry = all_categories()
+    if request.user.is_authenticated:
+        user = request.user
+        email = request.user.email
+        name = str(request.user)
+        create_customer = Customer.objects.get_or_create(user=user, email=email, name=name)
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total' : 0, 'get_cart_items' : 0}
+        cartItems = order['get_cart_items']
+    context = {'men_category' : men_category,
+               'women_category' : women_category,
+               'kids_category' : kids_catogry,
+               'cartItems' : cartItems,}
 
-    return render(request, 'home.html', 
-                {'men_category' : men_final_category, 
-                'women_category' : women_final_category,
-                'kid_category': kid_final_category})
+    return render(request, 'home.html', context)
 
-def home2(request):
-    men_final_category = final_sorted_categories(Men_category, Men_product_category)
-    women_final_category = final_sorted_categories(Women_category, Women_product_category)
-    kid_final_category = final_sorted_categories(Kid_category, Kid_product_category)
+def all_categories():
+    men, women, kids = get_categories()
+    men_category = conjoint_main_sub_categories(men)
+    women_cateogry = conjoint_main_sub_categories(women)
+    kids_category = conjoint_main_sub_categories(kids)
 
-    return render(request, 'home.html', 
-                {'men_category' : men_final_category, 
-                'women_category' : women_final_category,
-                'kid_category': kid_final_category})
+    return(men_category, women_cateogry, kids_category)
 
-
-def show_products(pk, gender_product):
-    products = gender_product.objects.all()
-    sorted_products_details = {}
-    for product in products:
-        if product.category_id not in sorted_products_details:
-            sorted_products_details[product.category_id] = [product]
-        else:
-            sorted_products_details[product.category_id].append(product)
-
-    goods = None
-    for product_id,product_details in sorted_products_details.items():
-        if product_id == int(pk):
-            goods = product_details
-
-    context = {
-        'products' : goods
-    }
-
-    return context
-
-def details(gender_product, product_name):
-    goods = None
-    products = gender_product.objects.values("name", "price", "image", "description")
-    for product in products:
-        if product_name == product["name"]:
-            goods = product
-
-    return goods
-
-def category():
-    men_final_category = final_sorted_categories(Men_category, Men_product_category)
-    women_final_category = final_sorted_categories(Women_category, Women_product_category)
-    kid_final_category = final_sorted_categories(Kid_category, Kid_product_category)
-    context = {
-            'men_category' : men_final_category, 
-            'women_category' : women_final_category,
-            'kid_category': kid_final_category
-            }
+def conjoint_main_sub_categories(category):
+    conjointed_category = {}
+    for i in category:
+        subcategory = SubCategory.objects.filter(category=i)
+        for j in subcategory:
+            if i not in conjointed_category:
+                conjointed_category[i] = [j]
+            else:
+                conjointed_category[i].append(j)
     
-    return context
+    return(conjointed_category)
 
-def show_products_men(request, pk):
-    goods = show_products(pk, Men_Product)
-    context = category()
-    context['products'] = goods['products']
+def get_categories():
+    category_men = []
+    category_women = []
+    category_kids = []
+    sex = Sex.objects.all()
+    for i in sex:
+        if str(i) == "male":
+            category_m = Category.objects.filter(sex=i)
+            category_men += category_m
+        elif str(i) == "female":
+            category_f = Category.objects.filter(sex=i)
+            category_women += category_f
+        elif str(i) == "kids":
+            category_k = Category.objects.filter(sex=i)
+            category_kids += category_k
+    
+    return(category_men, category_women, category_kids)
 
+def show_products(request, pk):
+    men_category, women_category, kids_catogry = all_categories()
+    products = Product.objects.filter(category=pk)
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items    
+    else:
+        items = []
+        order = {'get_cart_total' : 0, 'get_cart_items' : 0}
+        cartItems = order['get_cart_items']
+    context = {
+                'products' : products,
+                'men_category' : men_category,
+                'women_category' : women_category,
+                'kids_category' : kids_catogry,
+                'cartItems' : cartItems
+               }
     return render(request, 'products.html', context)
 
-def show_products_women(request, pk):
-    goods = show_products(pk, Women_Product)
-    context = category()
-    context['products'] = goods['products']
-
-    return render(request, 'products.html', context)
-
-def show_products_kids(request, pk):
-    goods = show_products(pk, Kid_Product)
-    context = category()
-    context['products'] = goods['products']
-
-    return render(request, 'products.html', context)
 
 def product_details(request, product_name):
-    products_gender = [Men_Product, Women_Product, Kid_Product]
-    goods = None
-    for products in products_gender:
-        if details(products, product_name):
-            goods = details(products, product_name)
-    context = category()
-    context['product'] = goods
-    
+    men_category, women_category, kids_catogry = all_categories()
+    product = Product.objects.get(name=product_name)
+    context = {
+                'product': product,
+                'men_category' : men_category,
+                'women_category' : women_category,
+                'kids_category' : kids_catogry
+            }
     return render(request, 'product_details.html', context)
 
 def search(request):
+    men_category, women_category, kids_catogry = all_categories()
     if request.method == "GET":
         searched = request.GET['search']
         search_capitalize = searched.capitalize()
-        men_product = Men_Product.objects.filter(name__contains=search_capitalize)
-        women_product = Women_Product.objects.filter(name__contains=searched)
-        kid_product = Kid_Product.objects.filter(name__contains=searched)
-        products = [men_product, women_product, kid_product]
-
-        product_wanted = []
-        for product in products:
-            if product:
-                product_wanted += product
-
-
-        context = category()
-        context['products'] = product_wanted
+        product = Product.objects.filter(name__contains=search_capitalize)
+        context = {
+                    'products' : product,
+                    'men_category' : men_category,
+                    'women_category' : women_category,
+                    'kids_category' : kids_catogry
+                    }
 
         return render(request, 'search.html', context)
     # else:
     #     return render(request, 'search.html')
-

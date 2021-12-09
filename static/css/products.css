@@ -1,111 +1,47 @@
-* {
-    margin: 0;
-    padding: 0;
-    font-family: 'Poppins', sans-serif;
+.box-element{
+	box-shadow:hsl(0, 0%, 80%) 0 0 16px;
+	background-color: #fff;
+	border-radius: 4px;
+	padding: 10px;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
+.cart-row{
+	display: flex;
+    align-items: flex-stretch;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ececec;
+
 }
 
-
-body {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    min-height: 100vh;
-    background: #dcdcdc;
+.col-lg-12{
+	margin-top: 10px;
 }
 
-#no-products h1 {
-    position: relative;
-    top: 250px;
+.row-image{
+	width: 100px;
 }
 
-#header {
-    z-index: 10;
-    position: fixed;
-    display: flex;
-    background-color: black;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
-  }
-  
-.logo {
-    display: flex;
-    position: relative;
-    margin-right: 130px;
-  }
-
-.logo img {
-    width: 130px;
-    height: 85px;
-  }
-
-.logo h1{
-    color: white;
-    position: absolute;
-    font-family: sans-serif;
-    top: 20px;
-    left: 95px;
-  }
-
-.containers {
-    position: relative;
-    top: 100px;
-    width: 1200px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    grid-gap: 20px;
+.btn{
+	border-radius: 0;
 }
 
-.containers a {
-    text-decoration: none;
-    color:black;
-    transition: transform 0.3s;
+.quantity{
+	display: inline-block;
+	font-weight: 700;
+	padding-right:10px;
+	
+
 }
 
-.containers a:hover {
-    transform: scale(1.1);
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(3px);
-    z-index: 5;
+.chg-quantity{
+	width: 12px;
+	cursor: pointer;
+	display: block;
+	margin-top: 5px;
+	transition:.1s;
 }
 
-.containers .card {
-    width: 100%;
-    background: #fff;
-    position: relative;
-}
-
-.p-image img {
-    width: 285px;
-    height: 250px;
-}
-
-.containers .card .content .price-rating {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.container .card .content .price-rating h2 {
-    font-size: 20px;
-    color: #ff2020;
-    font-weight: 200;
-}
-
-.container .card .content .price-rating .fas {
-    color: #ffd513;
-}
-
-.container .card .content .price-rating .fas:hover {
-    color: black;
+.chg-quantity:hover{
+	opacity: .6;
 }

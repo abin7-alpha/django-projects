@@ -215,3 +215,7 @@ footer {
   color: white;
 }
 
+.content-product {
+  display: flex;
+  justify-content: space-between;
+}

@@ -24,7 +24,6 @@ from home import urls
 
 urlpatterns = [
     path('', include('home.urls')),
-    path('authorization', include('authorization.urls')),
     path('admin/', admin.site.urls)
 ]
 
