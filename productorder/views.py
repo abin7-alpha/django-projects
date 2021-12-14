@@ -1,12 +1,22 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
+from home.views import get_categories
 from productorder.models import *
 from django.http import JsonResponse
 import json
+import datetime
 
 # Create your views here.
 
 def cart(request):
+    context = user_info(request)
+    return render(request, 'cart.html', context)
+
+def checkout(request):
+    context = user_info(request)
+    return render(request, 'checkout.html', context)
+
+def user_info(request):
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
@@ -17,20 +27,8 @@ def cart(request):
         order = {'get_cart_total' : 0, 'get_cart_items' : 0}
 
     context = {'items':items,'order': order, 'cartItems' : cartItems}
-    return render(request, 'cart.html', context)
 
-def checkout(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total' : 0, 'get_cart_items' : 0}
-
-    context = {'items':items, 'order':order, 'cartItems':cartItems}
-    return render(request, 'checkout.html', context)
+    return context
 
 def update_item(request):
     data = json.loads(request.body)
@@ -55,17 +53,42 @@ def update_item(request):
     return JsonResponse("item was added", safe=False)
 
 def process_order(request):
-    # if request.method == "POST":
-    #     customer = request.user.customer
-    #     order = Order.objects.get(customer=customer, complete=False)
-    #     address = request.POST.get('address')
-    #     city = request.POST.get('city')
-    #     state = request.POST.get('state')
-    #     zip_code = request.POST.get('zipcode')
-    #     ShippingAddress.objects.create(customer=customer, order = order, address=address,
-    #                                    city=city, state=state, zipcode=zip_code)
+    transaction_id = datetime.datetime.now().timestamp()
+    data = json.loads(request.body)
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        total = float(data['form']['total'])
+        order.transaction_id = transaction_id
+
+        if total == order.get_cart_total:
+            order.complete = True
+        order.save()
+
+        ShippingAddress.objects.create(
+            customer=customer,
+            order=order,
+            address = data['shipping']['address'],
+            city = data['shipping']['city'],
+            zipcode = data['shipping']['zipcode'],
+            state = data['shipping']['state'],
+        )
+    else:
+        print("user is not authenticated..")
     print("data :",request.body)
     return JsonResponse('payment complete', safe=False)
 
-        
+def user_orders(request):
+    total_orders = Order.objects.filter(customer = request.user.customer)
+    completed_orders = []
+    
+    for orders in total_orders:
+        if orders.complete == True:
+            completed_orders.append(orders)
 
+    products = {}
+    for order in completed_orders:
+        products[order] = order.orderitem_set.all()
+
+    context = {'productss' : products}
+    return render(request, 'orders.html', context)

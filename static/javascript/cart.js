@@ -1,15 +1,6 @@
 var update_butns = document.getElementsByClassName('update-cart')
 var checkout_btn = document.getElementsByClassName('checkout-btn')
 var form = document.getElementById('form')
-var shipping = '{{order.shipping}}'
-var total = '{{order.get_cart_total}}'
-
-form.addEventListener('submit', function(e) {
-    e.preventDefault()
-    console.log('Form submitted....')
-    document.getElementById('form-button').classList.add('hidden')
-    document.getElementById('payment-info').classList.remove('hidden')
-})
 
 for(let count = 0; count < update_butns.length; count++){
     update_butns[count].addEventListener('click', function() {
@@ -47,6 +38,14 @@ function update_user_order(product_id, action){
     })
 }
 
+form.addEventListener('submit', function(e) {
+    e.preventDefault()
+    console.log('Form submitted....')
+    console.log(total)
+    document.getElementById('form-button').classList.add('hidden')
+    document.getElementById('payment-info').classList.remove('hidden')
+})
+
 document.getElementById('payment-button').addEventListener('click', function(e) {
     submit_form_data()
 })
@@ -61,11 +60,17 @@ function submit_form_data() {
     }
 
     var shipping_info = {
-        'adress' : null,
+        'address' : null,
         'city' : null,
         'zipcode' : null,
         'state' : null
     }
+
+    shipping_info.address = form.address.value
+    shipping_info.city = form.city.value
+    shipping_info.state = form.state.value
+    shipping_info.zipcode = form.zipcode.value
+
 
     var url = '/process_order/'
     fetch(url, {

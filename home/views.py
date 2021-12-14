@@ -4,14 +4,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from authorization.views import login
 from django.http import JsonResponse
-from productorder.models import Order,Customer
+from productorder.models import Order,Customer, OrderItem
 
 from main.models import *
 
 # Create your views here.
 
 def home(request):
-    men_category, women_category, kids_catogry = all_categories()
     if request.user.is_authenticated:
         user = request.user
         email = request.user.email
@@ -24,10 +23,9 @@ def home(request):
         items = []
         order = {'get_cart_total' : 0, 'get_cart_items' : 0}
         cartItems = order['get_cart_items']
-    context = {'men_category' : men_category,
-               'women_category' : women_category,
-               'kids_category' : kids_catogry,
-               'cartItems' : cartItems,}
+
+    context = all_categories()
+    context['cartItems'] = cartItems
 
     return render(request, 'home.html', context)
 
@@ -37,7 +35,11 @@ def all_categories():
     women_cateogry = conjoint_main_sub_categories(women)
     kids_category = conjoint_main_sub_categories(kids)
 
-    return(men_category, women_cateogry, kids_category)
+    context = {'men_category' : men_category,
+               'women_category' : women_cateogry,
+               'kids_category' : kids_category}
+
+    return(context)
 
 def conjoint_main_sub_categories(category):
     conjointed_category = {}
@@ -70,7 +72,6 @@ def get_categories():
     return(category_men, category_women, category_kids)
 
 def show_products(request, pk):
-    men_category, women_category, kids_catogry = all_categories()
     products = Product.objects.filter(category=pk)
     if request.user.is_authenticated:
         customer = request.user.customer
@@ -81,25 +82,17 @@ def show_products(request, pk):
         items = []
         order = {'get_cart_total' : 0, 'get_cart_items' : 0}
         cartItems = order['get_cart_items']
-    context = {
-                'products' : products,
-                'men_category' : men_category,
-                'women_category' : women_category,
-                'kids_category' : kids_catogry,
-                'cartItems' : cartItems
-               }
+
+    context = all_categories()
+    context['cartItems'] = cartItems
+    
     return render(request, 'products.html', context)
 
 
 def product_details(request, product_name):
-    men_category, women_category, kids_catogry = all_categories()
     product = Product.objects.get(name=product_name)
-    context = {
-                'product': product,
-                'men_category' : men_category,
-                'women_category' : women_category,
-                'kids_category' : kids_catogry
-            }
+    context = all_categories()
+    context['product'] = product
     return render(request, 'product_details.html', context)
 
 def search(request):
@@ -108,12 +101,9 @@ def search(request):
         searched = request.GET['search']
         search_capitalize = searched.capitalize()
         product = Product.objects.filter(name__contains=search_capitalize)
-        context = {
-                    'products' : product,
-                    'men_category' : men_category,
-                    'women_category' : women_category,
-                    'kids_category' : kids_catogry
-                    }
+
+        context = all_categories()
+        context['product'] = product
 
         return render(request, 'search.html', context)
     # else:
