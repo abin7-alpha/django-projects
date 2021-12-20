@@ -4,8 +4,7 @@ from .forms import CreateUserForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
-# Create your views here.
-
+"""The register funtion for registering a user."""
 def register(request):
     form = CreateUserForm()
     if request.method == 'POST':
@@ -20,6 +19,7 @@ def register(request):
     context = {'form' : form}
     return render(request, 'register.html', context)
 
+"""The login funtion."""
 def login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -35,6 +35,7 @@ def login(request):
          
     return render(request, 'login.html')
 
+"""The logout funtion"""
 def logout(request):
     auth_logout(request)
     return redirect('login')

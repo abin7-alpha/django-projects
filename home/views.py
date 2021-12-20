@@ -1,4 +1,3 @@
-"""import "render" to render templates,all other for database connectivity"""
 import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -8,8 +7,8 @@ from productorder.models import Order,Customer, OrderItem
 
 from main.models import *
 
-# Create your views here.
-
+"""The function return's the content for the main/home page.
+   The funtion also creates some objects for checking out purpose"""
 def home(request):
     if request.user.is_authenticated:
         user = request.user
@@ -20,6 +19,7 @@ def home(request):
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         cartItems = order.get_cart_items
     else:
+        #the concept of guest user for ordering an item
         items = []
         order = {'get_cart_total' : 0, 'get_cart_items' : 0}
         cartItems = order['get_cart_items']
@@ -29,6 +29,8 @@ def home(request):
 
     return render(request, 'home.html', context)
 
+"""Hovering gender based categories this return's the final sorted category,i.e which subcategory
+   belongs to main catogry."""
 def all_categories():
     men, women, kids = get_categories()
     men_category = conjoint_main_sub_categories(men)
@@ -40,7 +42,7 @@ def all_categories():
                'kids_category' : kids_category}
 
     return(context)
-
+"""Joining the subcategory to the main category return's as a dictionary."""
 def conjoint_main_sub_categories(category):
     conjointed_category = {}
     for i in category:
@@ -53,6 +55,8 @@ def conjoint_main_sub_categories(category):
     
     return(conjointed_category)
 
+"""This is where the sorting happens, in order to get the subcategories
+   according to the main category."""
 def get_categories():
     category_men = []
     category_women = []
@@ -71,6 +75,7 @@ def get_categories():
     
     return(category_men, category_women, category_kids)
 
+"""Return's a list of products belongs to the appropriate subcategory"""
 def show_products(request, pk):
     products = Product.objects.filter(category=pk)
     if request.user.is_authenticated:
@@ -88,13 +93,14 @@ def show_products(request, pk):
     
     return render(request, 'products.html', context)
 
-
+"""Returns a dictionary of details of an product."""
 def product_details(request, product_name):
     product = Product.objects.get(name=product_name)
     context = all_categories()
     context['product'] = product
     return render(request, 'product_details.html', context)
 
+"""The search funtion for searching a product name or product subcategory."""
 def search(request):
     men_category, women_category, kids_catogry = all_categories()
     if request.method == "GET":
@@ -106,5 +112,3 @@ def search(request):
         context['product'] = product
 
         return render(request, 'search.html', context)
-    # else:
-    #     return render(request, 'search.html')

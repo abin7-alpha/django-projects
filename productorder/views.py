@@ -6,16 +6,18 @@ from django.http import JsonResponse
 import json
 import datetime
 
-# Create your views here.
-
+"""To get the items that a user added to the cart."""
 def cart(request):
     context = user_info(request)
     return render(request, 'cart.html', context)
 
+"""To get the items in the cart to checkout those items"""
 def checkout(request):
     context = user_info(request)
     return render(request, 'checkout.html', context)
 
+"""The funtion for getting cart items,checkout items,Order we need to create/get
+   is happening in here"""
 def user_info(request):
     if request.user.is_authenticated:
         customer = request.user.customer
@@ -30,6 +32,10 @@ def user_info(request):
 
     return context
 
+"""Json gets data from the front-end ans the funtion works in the database.
+   This funtion do the purposes like adding or removing an item from the cart,
+   also decrease/increase the quantity of the products according to the adding
+   or removing from the cart."""
 def update_item(request):
     data = json.loads(request.body)
     product_id = data['product_id']
@@ -52,6 +58,7 @@ def update_item(request):
 
     return JsonResponse("item was added", safe=False)
 
+"""The funtion process the final order"""
 def process_order(request):
     transaction_id = datetime.datetime.now().timestamp()
     data = json.loads(request.body)
@@ -65,6 +72,7 @@ def process_order(request):
             order.complete = True
         order.save()
 
+        #creating a shipping object for the order.
         ShippingAddress.objects.create(
             customer=customer,
             order=order,
@@ -78,6 +86,8 @@ def process_order(request):
     print("data :",request.body)
     return JsonResponse('payment complete', safe=False)
 
+"""This function return's orders of a user.Only order completed objects will appear on
+   the orders page."""
 def user_orders(request):
     total_orders = Order.objects.filter(customer = request.user.customer)
     completed_orders = []
